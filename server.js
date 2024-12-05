@@ -1,4 +1,5 @@
 require('dotenv').config();
+const { log } = require('console');
 const express = require("express");
 const http = require("http");
 const app = express();
@@ -11,6 +12,7 @@ const users = {};
 const socketToRoom = {};
 
 io.on('connection', socket => {
+    console.log("user joined");
     socket.on("join room", roomID => {
         if (users[roomID]) {
             const length = users[roomID].length;
@@ -19,8 +21,16 @@ io.on('connection', socket => {
                 return;
             }
             users[roomID].push(socket.id);
+            console.log("user joining in live room");
+            console.log("currnt user: ", socket.id);
+            
+            console.log("users, ", users);
+            
         } else {
+            console.log("user created room");
             users[roomID] = [socket.id];
+            console.log("users, ", users);
+
         }
         socketToRoom[socket.id] = roomID;
         const usersInThisRoom = users[roomID].filter(id => id !== socket.id);

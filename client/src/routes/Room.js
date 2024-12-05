@@ -60,6 +60,8 @@ const Room = (props) => {
                     peers.push(peer);
                 })
                 setPeers(peers);
+                console.log("PEERRSS: ", peers);
+                
             })
 
             socketRef.current.on("user joined", payload => {
@@ -70,6 +72,8 @@ const Room = (props) => {
                 })
 
                 setPeers(users => [...users, peer]);
+                console.log("user", peers);
+                
             });
 
             socketRef.current.on("receiving returned signal", payload => {
@@ -79,16 +83,33 @@ const Room = (props) => {
         })
     }, []);
 
+    const iceServers = [
+        {
+            urls: 'stun:stun.l.google.com:19302', // Google's public STUN server
+        },
+        // Add TURN server configuration if needed
+        // {
+        //     urls: 'turn:your-turn-server-url',
+        //     username: 'your-username',
+        //     credential: 'your-credential'
+        // },
+    ];
+    
+
     function createPeer(userToSignal, callerID, stream) {
         const peer = new Peer({
             initiator: true,
             trickle: false,
+            config: { iceServers }, // Add ICE servers here,
             stream,
         });
 
         peer.on("signal", signal => {
             socketRef.current.emit("sending signal", { userToSignal, callerID, signal })
         })
+
+        console.log("peer", peer);
+        
 
         return peer;
     }
@@ -97,21 +118,42 @@ const Room = (props) => {
         const peer = new Peer({
             initiator: false,
             trickle: false,
+            config: { iceServers }, // Include ICE servers
             stream,
-        })
-
+        });
+    
         peer.on("signal", signal => {
-            socketRef.current.emit("returning signal", { signal, callerID })
-        })
-
+            socketRef.current.emit("returning signal", { signal, callerID });
+        });
+    
+        peer.on("stream", stream => {
+            console.log("Stream received from peer:", stream);
+        });
+    
         peer.signal(incomingSignal);
-
+    
         return peer;
     }
+    
+    // Debug in Video Component
+    const Video = (props) => {
+        const ref = useRef();
+    
+        useEffect(() => {
+            props.peer.on("stream", stream => {
+                console.log("Video component stream received:", stream);
+                ref.current.srcObject = stream;
+            });
+        }, [props.peer]);
+    
+        return <StyledVideo playsInline autoPlay ref={ref} />;
+    };
+    
 
     return (
         <Container>
             <StyledVideo muted ref={userVideo} autoPlay playsInline />
+            {peers.length}
             {peers.map((peer, index) => {
                 return (
                     <Video key={index} peer={peer} />
