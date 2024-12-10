@@ -1,14 +1,22 @@
-import React from "react";
+import React, { useState } from "react";
 import { v1 as uuid } from "uuid";
+import { useEffect } from "react";
 
 const CreateRoom = (props) => {
+    const [roomName, setRoomName] = useState('');
     function create() {
-        const id = uuid();
+        const id = roomName;
         props.history.push(`/room/${id}`);
     }
 
+
     return (
-        <button onClick={create}>Create room</button>
+        <div>
+            <input value={roomName} onChange={(e)=>setRoomName(e.target.value)}/>
+            <button onClick={create}>Create room</button>
+            <button onClick={create}>Join room</button>
+
+        </div>
     );
 };
 

@@ -1,11 +1,27 @@
 require('dotenv').config();
 const { log } = require('console');
 const express = require("express");
-const http = require("http");
+const https = require("https");
 const app = express();
-const server = http.createServer(app);
+const fs = require('fs');
+app.use(express.static(__dirname))
+
+
+const key = fs.readFileSync('cert.key');
+const cert = fs.readFileSync('cert.crt');
+
+const server =  https.createServer({key, cert}, app);
+
 const socket = require("socket.io");
-const io = socket(server);
+const io = socket(server, {
+    cors: {
+        origin: [
+            // "https://localhost",
+            "https://192.168.29.188"
+        ],
+        methods:["GET", "POST"]
+    }
+});
 
 const users = {};
 
@@ -57,6 +73,6 @@ io.on('connection', socket => {
 
 });
 
-server.listen(process.env.PORT || 8000, () => console.log('server is running on port 8000'));
+server.listen(process.env.PORT || 8181, () => console.log('server is running on port 8181'));
 
 

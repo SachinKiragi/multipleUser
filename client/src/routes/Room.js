@@ -3,6 +3,7 @@ import io from "socket.io-client";
 import Peer from "simple-peer";
 import styled from "styled-components";
 
+
 const Container = styled.div`
     padding: 20px;
     display: flex;
@@ -44,9 +45,9 @@ const Room = (props) => {
     const peersRef = useRef([]);
     const roomID = props.match.params.roomID;
 
-    useEffect(() => {
-        socketRef.current = io.connect("/");
-        navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: true }).then(stream => {
+    useEffect(async() => {
+        socketRef.current = io.connect("https://192.168.29.188:8181");
+        await navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: true }).then(stream => {
             userVideo.current.srcObject = stream;
             socketRef.current.emit("join room", roomID);
             socketRef.current.on("all users", users => {
@@ -83,18 +84,27 @@ const Room = (props) => {
         })
     }, []);
 
-    const iceServers = [
-        {
-            urls: 'stun:stun.l.google.com:19302', // Google's public STUN server
-        },
-        // Add TURN server configuration if needed
-        // {
-        //     urls: 'turn:your-turn-server-url',
-        //     username: 'your-username',
-        //     credential: 'your-credential'
-        // },
-    ];
+    // const iceServers = [
+    //     {
+    //         urls: 'stun:stun.l.google.com:19302', // Google's public STUN server
+    //     },
+    //     // Add TURN server configuration if needed
+    //     // {
+    //     //     urls: 'turn:your-turn-server-url',
+    //     //     username: 'your-username',
+    //     //     credential: 'your-credential'
+    //     // },
+    // ];
     
+
+        const iceServers = [
+            {
+                urls:[
+                  'stun:stun.l.google.com:19302',
+                  'stun:stun1.l.google.com:19302'
+                ]
+            }
+        ]
 
     function createPeer(userToSignal, callerID, stream) {
         const peer = new Peer({
